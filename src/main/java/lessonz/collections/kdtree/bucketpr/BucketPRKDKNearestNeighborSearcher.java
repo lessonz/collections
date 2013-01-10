@@ -115,6 +115,7 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 			this.capacity = capacity;
 			nearestNeighbors = new ArrayList<>(capacity);
 			this.lastIndex = capacity - 1;
+
 		}
 
 		private void add(final E e) {
@@ -122,18 +123,26 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 				nearestNeighbors.remove(lastIndex);
 			}
 
+			boolean addedElement = false;
 			E nearestNeighbor;
-			for (int i = 0; i < capacity; i++) {
+			for (int i = 0; i < nearestNeighbors.size(); i++) {
 				nearestNeighbor = nearestNeighbors.get(i);
 				if (nearestNeighbor == null
 						|| distanceFunction.distance(e.getCoordinates(), targetCoordinates) < distanceFunction
 								.distance(nearestNeighbor.getCoordinates(), targetCoordinates)) {
 					nearestNeighbors.add(i, e);
+					addedElement = true;
 					break;
 				}
 			}
 
-			farthestNearNeighbor = nearestNeighbors.get(nearestNeighbors.size());
+			if (!addedElement) {
+				nearestNeighbors.add(e);
+			}
+
+			if (nearestNeighbors.size() == capacity) {
+				farthestNearNeighbor = nearestNeighbors.get(lastIndex);
+			}
 		}
 
 		private E getFarthestNearNeighbor() {

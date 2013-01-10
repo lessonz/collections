@@ -48,16 +48,13 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 	}
 
 	private void createSplit(final int numberOfDimensions, final List<E> elements) {
-		@SuppressWarnings("unchecked")
-		final E[] test = (E[]) elements.toArray();
-
 		double maxVariance = Double.NEGATIVE_INFINITY;
 		double maxValue, minValue, value, variance;
 		for (int i = 0; i < numberOfDimensions; i++) {
-			maxValue = test[0].getCoordinate(i);
+			maxValue = elements.get(0).getCoordinate(i);
 			minValue = maxValue;
-			for (int j = 1; j < test.length; j++) {
-				value = test[j].getCoordinate(i);
+			for (int j = 1; j < elements.size(); j++) {
+				value = elements.get(j).getCoordinate(i);
 
 				if (value < minValue) {
 					minValue = value;
