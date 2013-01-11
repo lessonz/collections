@@ -14,22 +14,8 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 	private double[] targetCoordinates = new double[0];
 	private final BucketPRKDTree<E> tree;
 
-	public BucketPRKDKNearestNeighborSearcher(final BucketPRKDTree<E> tree) {
+	BucketPRKDKNearestNeighborSearcher(final BucketPRKDTree<E> tree) {
 		this.tree = tree;
-	}
-
-	public DistanceFunction getDefaultDistanceFunction() {
-		return DEFAULT_DISTANCE_FUNCTION;
-	}
-
-	public List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
-		this.targetCoordinates = targetCoordinates;
-		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k, distanceFunction), targetCoordinates)
-				.toList();
-	}
-
-	public void setDistanceFunction(final DistanceFunction distanceFunction) {
-		this.distanceFunction = distanceFunction;
 	}
 
 	private boolean currentElementIsCloser(final double[] testCoordinates, final E farthestNearNeighbor) {
@@ -102,6 +88,20 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		}
 
 		return nearestNeighborList;
+	}
+
+	DistanceFunction getDefaultDistanceFunction() {
+		return DEFAULT_DISTANCE_FUNCTION;
+	}
+
+	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
+		this.targetCoordinates = targetCoordinates;
+		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k, distanceFunction), targetCoordinates)
+				.toList();
+	}
+
+	void setDistanceFunction(final DistanceFunction distanceFunction) {
+		this.distanceFunction = distanceFunction;
 	}
 
 	private class NearestNeighborList {
