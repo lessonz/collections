@@ -22,11 +22,7 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 
 	@Override
 	public BucketPRKDTreeNode<E> add(final E e) {
-		if (e.getCoordinate(splitDimensionIdex) < splitDimensionMedian) {
-			left.add(e);
-		} else {
-			right.add(e);
-		}
+		addSingleElement(e);
 
 		return this;
 	}
@@ -43,7 +39,15 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 
 	private void addAll(final Collection<E> elements) {
 		for (final E e : elements) {
-			add(e);
+			addSingleElement(e);
+		}
+	}
+
+	private void addSingleElement(final E e) {
+		if (e.getCoordinate(splitDimensionIdex) < splitDimensionMedian) {
+			left.add(e);
+		} else {
+			right.add(e);
 		}
 	}
 
