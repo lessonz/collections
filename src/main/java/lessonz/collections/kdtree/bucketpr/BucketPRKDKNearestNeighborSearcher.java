@@ -54,7 +54,7 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		return nearestNeighborList;
 	}
 
-	private NearestNeighborList getNearestNeighborsFromSplittingPlaneNode(
+	private final NearestNeighborList getNearestNeighborsFromSplittingPlaneNode(
 			final SplittingPlaneNode<E> splittingPlaneNode, final int k, NearestNeighborList nearestNeighborList,
 			final double[] closestStillPossibleCoordinates) {
 		final int splitDimensionIndex = splittingPlaneNode.getSplitDimensionIndex();
