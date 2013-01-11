@@ -96,8 +96,7 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 
 	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
 		this.targetCoordinates = targetCoordinates;
-		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k, distanceFunction), targetCoordinates)
-				.toList();
+		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k), targetCoordinates).toList();
 	}
 
 	void setDistanceFunction(final DistanceFunction distanceFunction) {
@@ -111,7 +110,7 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		private final int lastIndex;
 		private final List<E> nearestNeighbors;
 
-		private NearestNeighborList(final int capacity, final DistanceFunction distanceFunction) {
+		private NearestNeighborList(final int capacity) {
 			this.capacity = capacity;
 			nearestNeighbors = new ArrayList<>(capacity);
 			this.lastIndex = capacity - 1;
