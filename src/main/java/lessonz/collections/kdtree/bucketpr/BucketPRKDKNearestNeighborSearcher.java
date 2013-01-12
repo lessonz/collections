@@ -31,16 +31,29 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 	}
 
 	private NearestNeighborList getKNearestNeighbors(final BucketPRKDTreeNode<E> node, final int k,
-			NearestNeighborList nearestNeighborList, final double[] closestStillPossibleCoordinates) {
+			final NearestNeighborList nearestNeighborList, final double[] closestStillPossibleCoordinates) {
 		if (node instanceof BucketNode) {
-			nearestNeighborList = getNearestNeighborsFromBucketNode((BucketNode<E>) node, nearestNeighborList);
+			return getNearestNeighborsFromBucketNode((BucketNode<E>) node, nearestNeighborList);
 		} else if (node instanceof SplittingPlaneNode) {
-			nearestNeighborList =
-					getNearestNeighborsFromSplittingPlaneNode((SplittingPlaneNode<E>) node, k, nearestNeighborList,
-							closestStillPossibleCoordinates);
+			return getNearestNeighborsFromSplittingPlaneNode((SplittingPlaneNode<E>) node, k, nearestNeighborList,
+					closestStillPossibleCoordinates);
 		}
 
-		return nearestNeighborList;
+		throw new IllegalArgumentException("The provided BucketPRKDTreeNode is of an unsupported type.");
+	}
+
+	private NearestNeighborList getNearestNeighborFromSplittingPlanesTreesNodes(final int k,
+			final NearestNeighborList previouslyFoundNearestNeighborList,
+			final double[] closestStillPossibleCoordinates, NearestNeighborList nearestNeighborList,
+			final double[] fartherClosestStillPossibleCoordinates, final E farthestNearNeighbor,
+			final BucketPRKDTreeNode<E> closerNode, final BucketPRKDTreeNode<E> fartherNode) {
+		if (currentElementIsCloser(fartherClosestStillPossibleCoordinates, farthestNearNeighbor)) {
+			nearestNeighborList =
+					getKNearestNeighbors(fartherNode, k, previouslyFoundNearestNeighborList,
+							fartherClosestStillPossibleCoordinates);
+		}
+
+		return getKNearestNeighbors(closerNode, k, nearestNeighborList, closestStillPossibleCoordinates);
 	}
 
 	private NearestNeighborList getNearestNeighborsFromBucketNode(final BucketNode<E> bucketNode,
@@ -54,40 +67,30 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		return nearestNeighborList;
 	}
 
-	private final NearestNeighborList getNearestNeighborsFromSplittingPlaneNode(
-			final SplittingPlaneNode<E> splittingPlaneNode, final int k, NearestNeighborList nearestNeighborList,
-			final double[] closestStillPossibleCoordinates) {
+	private NearestNeighborList getNearestNeighborsFromSplittingPlaneNode(
+			final SplittingPlaneNode<E> splittingPlaneNode, final int k,
+			final NearestNeighborList previouslyFoundNearestNeighborList, final double[] closestStillPossibleCoordinates) {
+		final NearestNeighborList nearestNeighborList = previouslyFoundNearestNeighborList;
+
 		final int splitDimensionIndex = splittingPlaneNode.getSplitDimensionIndex();
 		final double splitDimensionMedian = splittingPlaneNode.getSplitDimensionMedian();
 
-		final double[] splittingPlaneCoordinates = new double[closestStillPossibleCoordinates.length];
-		System.arraycopy(closestStillPossibleCoordinates, 0, splittingPlaneCoordinates, 0,
+		final double[] fartherClosestStillPossibleCoordinates = new double[closestStillPossibleCoordinates.length];
+		System.arraycopy(closestStillPossibleCoordinates, 0, fartherClosestStillPossibleCoordinates, 0,
 				closestStillPossibleCoordinates.length);
-		splittingPlaneCoordinates[splitDimensionIndex] = splitDimensionMedian;
+		fartherClosestStillPossibleCoordinates[splitDimensionIndex] = splitDimensionMedian;
 		final E farthestNearNeighbor = nearestNeighborList.getFarthestNearNeighbor();
 		if (splitDimensionMedian < closestStillPossibleCoordinates[splitDimensionIndex]) {
-			if (currentElementIsCloser(splittingPlaneCoordinates, farthestNearNeighbor)) {
-				nearestNeighborList =
-						getKNearestNeighbors(splittingPlaneNode.getLeftBucketPRKDTree().getNode(), k,
-								nearestNeighborList, splittingPlaneCoordinates);
-			}
-
-			nearestNeighborList =
-					getKNearestNeighbors(splittingPlaneNode.getRightBucketPRKDTree().getNode(), k, nearestNeighborList,
-							closestStillPossibleCoordinates);
+			return getNearestNeighborFromSplittingPlanesTreesNodes(k, previouslyFoundNearestNeighborList,
+					closestStillPossibleCoordinates, nearestNeighborList, fartherClosestStillPossibleCoordinates,
+					farthestNearNeighbor, splittingPlaneNode.getRightBucketPRKDTree().getNode(), splittingPlaneNode
+							.getLeftBucketPRKDTree().getNode());
 		} else {
-			nearestNeighborList =
-					getKNearestNeighbors(splittingPlaneNode.getLeftBucketPRKDTree().getNode(), k, nearestNeighborList,
-							closestStillPossibleCoordinates);
-
-			if (currentElementIsCloser(splittingPlaneCoordinates, farthestNearNeighbor)) {
-				nearestNeighborList =
-						getKNearestNeighbors(splittingPlaneNode.getRightBucketPRKDTree().getNode(), k,
-								nearestNeighborList, splittingPlaneCoordinates);
-			}
+			return getNearestNeighborFromSplittingPlanesTreesNodes(k, previouslyFoundNearestNeighborList,
+					closestStillPossibleCoordinates, nearestNeighborList, fartherClosestStillPossibleCoordinates,
+					farthestNearNeighbor, splittingPlaneNode.getLeftBucketPRKDTree().getNode(), splittingPlaneNode
+							.getRightBucketPRKDTree().getNode());
 		}
-
-		return nearestNeighborList;
 	}
 
 	DistanceFunction getDefaultDistanceFunction() {
@@ -95,15 +98,16 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 	}
 
 	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
-		this.targetCoordinates = targetCoordinates;
-		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k), targetCoordinates).toList();
+		this.targetCoordinates = new double[targetCoordinates.length];
+		System.arraycopy(targetCoordinates, 0, this.targetCoordinates, 0, targetCoordinates.length);
+		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k), this.targetCoordinates).toList();
 	}
 
 	void setDistanceFunction(final DistanceFunction distanceFunction) {
 		this.distanceFunction = distanceFunction;
 	}
 
-	private class NearestNeighborList {
+	private final class NearestNeighborList {
 
 		private final int capacity;
 		private E farthestNearNeighbor;
