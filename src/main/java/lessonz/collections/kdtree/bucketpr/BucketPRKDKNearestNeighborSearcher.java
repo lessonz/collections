@@ -44,9 +44,11 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 
 	private NearestNeighborList getNearestNeighborFromSplittingPlanesTreesNodes(final int k,
 			final NearestNeighborList previouslyFoundNearestNeighborList,
-			final double[] closestStillPossibleCoordinates, NearestNeighborList nearestNeighborList,
-			final double[] fartherClosestStillPossibleCoordinates, final E farthestNearNeighbor,
-			final BucketPRKDTreeNode<E> closerNode, final BucketPRKDTreeNode<E> fartherNode) {
+			final double[] closestStillPossibleCoordinates, final double[] fartherClosestStillPossibleCoordinates,
+			final E farthestNearNeighbor, final BucketPRKDTreeNode<E> closerNode,
+			final BucketPRKDTreeNode<E> fartherNode) {
+		NearestNeighborList nearestNeighborList = previouslyFoundNearestNeighborList;
+
 		if (currentElementIsCloser(fartherClosestStillPossibleCoordinates, farthestNearNeighbor)) {
 			nearestNeighborList =
 					getKNearestNeighbors(fartherNode, k, previouslyFoundNearestNeighborList,
@@ -70,8 +72,6 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 	private NearestNeighborList getNearestNeighborsFromSplittingPlaneNode(
 			final SplittingPlaneNode<E> splittingPlaneNode, final int k,
 			final NearestNeighborList previouslyFoundNearestNeighborList, final double[] closestStillPossibleCoordinates) {
-		final NearestNeighborList nearestNeighborList = previouslyFoundNearestNeighborList;
-
 		final int splitDimensionIndex = splittingPlaneNode.getSplitDimensionIndex();
 		final double splitDimensionMedian = splittingPlaneNode.getSplitDimensionMedian();
 
@@ -79,17 +79,17 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		System.arraycopy(closestStillPossibleCoordinates, 0, fartherClosestStillPossibleCoordinates, 0,
 				closestStillPossibleCoordinates.length);
 		fartherClosestStillPossibleCoordinates[splitDimensionIndex] = splitDimensionMedian;
-		final E farthestNearNeighbor = nearestNeighborList.getFarthestNearNeighbor();
+		final E farthestNearNeighbor = previouslyFoundNearestNeighborList.getFarthestNearNeighbor();
 		if (splitDimensionMedian < closestStillPossibleCoordinates[splitDimensionIndex]) {
 			return getNearestNeighborFromSplittingPlanesTreesNodes(k, previouslyFoundNearestNeighborList,
-					closestStillPossibleCoordinates, nearestNeighborList, fartherClosestStillPossibleCoordinates,
-					farthestNearNeighbor, splittingPlaneNode.getRightBucketPRKDTree().getNode(), splittingPlaneNode
-							.getLeftBucketPRKDTree().getNode());
+					closestStillPossibleCoordinates, fartherClosestStillPossibleCoordinates, farthestNearNeighbor,
+					splittingPlaneNode.getRightBucketPRKDTree().getNode(), splittingPlaneNode.getLeftBucketPRKDTree()
+							.getNode());
 		} else {
 			return getNearestNeighborFromSplittingPlanesTreesNodes(k, previouslyFoundNearestNeighborList,
-					closestStillPossibleCoordinates, nearestNeighborList, fartherClosestStillPossibleCoordinates,
-					farthestNearNeighbor, splittingPlaneNode.getLeftBucketPRKDTree().getNode(), splittingPlaneNode
-							.getRightBucketPRKDTree().getNode());
+					closestStillPossibleCoordinates, fartherClosestStillPossibleCoordinates, farthestNearNeighbor,
+					splittingPlaneNode.getLeftBucketPRKDTree().getNode(), splittingPlaneNode.getRightBucketPRKDTree()
+							.getNode());
 		}
 	}
 
