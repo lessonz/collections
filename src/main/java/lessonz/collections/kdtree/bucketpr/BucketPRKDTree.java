@@ -28,10 +28,24 @@ public class BucketPRKDTree<E extends KDPoint> extends AbstractCollection<E> {
 	private final int numberOfDimensions;
 	private final BucketPRKDKNearestNeighborSearcher<E> searcher = new BucketPRKDKNearestNeighborSearcher<E>(this);
 
+	/**
+	 * Constructs a {@link BucketPRKDTree} with the default bucket size.
+	 * 
+	 * @param numOfDimensions
+	 *            the number of dimensions of this {@link BucketPRKDTree}.
+	 */
 	public BucketPRKDTree(final int numOfDimensions) {
 		this(numOfDimensions, DEFAULT_BUCKET_SIZE);
 	}
 
+	/**
+	 * Constructs a {@link BucketPRKDTree} with the specfied number of dimensions and bucket size.
+	 * 
+	 * @param numberOfDimensions
+	 *            the number of dimensions of this {@link BucketPRKDTree}.
+	 * @param bucketSize
+	 *            the bucket size of this {@link BucketPRKDTree}.
+	 */
 	public BucketPRKDTree(final int numberOfDimensions, final int bucketSize) {
 		this.numberOfDimensions = numberOfDimensions;
 		this.bucketSize = bucketSize;
@@ -51,20 +65,72 @@ public class BucketPRKDTree<E extends KDPoint> extends AbstractCollection<E> {
 		node = new BucketNode<E>(numberOfDimensions, bucketSize);
 	}
 
+	/**
+	 * Finds up to the specified number of elements closest to the targeted coordinates. If there are at least k
+	 * elements, k elements will be returned. If there are fewer, all elements will be returned. No ordering of the
+	 * returned list is implied. The default function is used to determine point proximity.
+	 * 
+	 * @param k
+	 *            the number of neighbors for which to search.
+	 * @param targetCoordinates
+	 *            the coordinates near which to search.
+	 * @return the nearest neighbors found.
+	 */
 	public List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
 		return getKNearestNeighbors(k, targetCoordinates, searcher.getDefaultDistanceFunction());
 	}
 
+	/**
+	 * Finds up to the specified number of elements closest to the targeted coordinates. If there are at least k
+	 * elements, k elements will be returned. If there are fewer, all elements will be returned. No ordering of the
+	 * returned list is implied.
+	 * 
+	 * @param k
+	 *            the number of neighbors for which to search.
+	 * @param targetCoordinates
+	 *            the coordinates near which to search.
+	 * @param distanceFunction
+	 *            the {@link DistanceFunction} to be used in determining proximity.
+	 * @return the nearest neighbors found.
+	 */
 	public List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates,
 			final DistanceFunction distanceFunction) {
 		searcher.setDistanceFunction(distanceFunction);
 		return searcher.getKNearestNeighbors(k, targetCoordinates);
 	}
 
+	/**
+	 * Finds up to the specified number of elements closest to the targeted coordinates. If there are at least k
+	 * elements, k elements will be returned. If there are fewer, all elements will be returned. No ordering of the
+	 * returned list is implied. The default function is used to determine point proximity.<br>
+	 * <br>
+	 * This is a convenience method and is the equivalent of calling BucketPRKDTree.getKNearestNeighbors(int,
+	 * target.getCoordinates()). This also means whether or not the target element is in the {@link BucketPRKDTree} has
+	 * no impact on the returned {@link List}.
+	 * 
+	 * @param k
+	 *            the number of neighbors for which to search.
+	 * @param target
+	 *            the element near which to search.
+	 * @return the nearest neighbors found.
+	 */
 	public List<E> getKNearestNeighbors(final int k, final E target) {
 		return getKNearestNeighbors(k, target.getCoordinates());
 	}
 
+	/**
+	 * Finds up to the specified number of elements closest to the targeted coordinates. If there are at least k
+	 * elements, k elements will be returned. If there are fewer, all elements will be returned. No ordering of the
+	 * returned list is implied.
+	 * 
+	 * @param k
+	 *            the number of neighbors for which to search.
+	 * @param target
+	 *            the element near which to search.
+	 * @param distanceFunction
+	 *            the {@link DistanceFunction} to be used in determining proximity.
+	 * @return the nearest neighbors found.
+	 */
 	public List<E> getKNearestNeighbors(final int k, final E target, final DistanceFunction distanceFunction) {
 		return getKNearestNeighbors(k, target.getCoordinates(), distanceFunction);
 	}
