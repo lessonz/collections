@@ -44,11 +44,19 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 	}
 
 	private void addSingleElement(final E e) {
-		if (e.getCoordinate(splitDimensionIdex) < splitDimensionMedian) {
-			left.add(e);
-		} else {
-			right.add(e);
+		BucketPRKDTreeNode<E> node = this;
+		BucketPRKDTree<E> tree = null;
+		while (node instanceof SplittingPlaneNode) {
+			if (e.getCoordinate(((SplittingPlaneNode<E>) node).splitDimensionIdex) < ((SplittingPlaneNode<E>) node).splitDimensionMedian) {
+				tree = ((SplittingPlaneNode<E>) node).left;
+			} else {
+				tree = ((SplittingPlaneNode<E>) node).right;
+			}
+
+			node = tree.getNode();
 		}
+
+		tree.add(e);
 	}
 
 	private void createSplit(final int numberOfDimensions, final List<E> elements) {
@@ -71,7 +79,7 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 			if (variance > maxVariance) {
 				maxVariance = variance;
 				splitDimensionIdex = i;
-				splitDimensionMedian = variance / 2.0;
+				splitDimensionMedian = variance / 2.0 + minValue;
 			}
 		}
 	}
@@ -90,6 +98,10 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 
 	double getSplitDimensionMedian() {
 		return splitDimensionMedian;
+	}
+
+	boolean isUnbalanced() {
+		return left.isEmpty() || right.isEmpty();
 	}
 
 	private class SplitPlaneIterator implements Iterator<E> {

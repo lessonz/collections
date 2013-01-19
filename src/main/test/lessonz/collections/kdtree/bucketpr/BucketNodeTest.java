@@ -58,6 +58,19 @@ public class BucketNodeTest {
 	}
 
 	@Test
+	public void testAddWhenBucketOverflowsButCantCreateSplittingPlane() {
+		sut = new BucketNode<>(TEST_NUMBER_OF_DIMENSIONS, TEST_BUCKET_SIZE_FOR_OVERFLOW);
+
+		BucketPRKDTreeNode<KDPoint> node;
+		int i = 0;
+		for (; i <= TEST_BUCKET_SIZE_FOR_OVERFLOW; i++) {
+			assertEquals(i, sut.size());
+			node = sut.add(TEST_ELEMENT_1);
+		}
+		assertEquals(i, sut.size());
+	}
+
+	@Test
 	public void testIterator() {
 		addTestElements();
 		final List<KDPoint> allPoints = new ArrayList<>(TEST_ELEMENTS);
