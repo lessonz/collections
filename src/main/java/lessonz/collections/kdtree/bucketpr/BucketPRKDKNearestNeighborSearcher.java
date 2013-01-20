@@ -1,6 +1,7 @@
 package lessonz.collections.kdtree.bucketpr;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lessonz.collections.kdtree.KDPoint;
@@ -10,8 +11,14 @@ import lessonz.collections.kdtree.distance.SquaredEuclideanDistanceFunction;
 class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 
 	private static final DistanceFunction DEFAULT_DISTANCE_FUNCTION = new SquaredEuclideanDistanceFunction();
+
+	static DistanceFunction getDefaultDistanceFunction() {
+		return DEFAULT_DISTANCE_FUNCTION;
+	}
+
 	private DistanceFunction distanceFunction = DEFAULT_DISTANCE_FUNCTION;
 	private double[] targetCoordinates = new double[0];
+
 	private final BucketPRKDTree<E> tree;
 
 	BucketPRKDKNearestNeighborSearcher(final BucketPRKDTree<E> tree) {
@@ -75,9 +82,8 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		final int splitDimensionIndex = splittingPlaneNode.getSplitDimensionIndex();
 		final double splitDimensionMedian = splittingPlaneNode.getSplitDimensionMedian();
 
-		final double[] fartherClosestStillPossibleCoordinates = new double[closestStillPossibleCoordinates.length];
-		System.arraycopy(closestStillPossibleCoordinates, 0, fartherClosestStillPossibleCoordinates, 0,
-				closestStillPossibleCoordinates.length);
+		final double[] fartherClosestStillPossibleCoordinates =
+				Arrays.copyOf(closestStillPossibleCoordinates, closestStillPossibleCoordinates.length);
 		fartherClosestStillPossibleCoordinates[splitDimensionIndex] = splitDimensionMedian;
 		final E farthestNearNeighbor = previouslyFoundNearestNeighborList.getFarthestNearNeighbor();
 		if (splitDimensionMedian < closestStillPossibleCoordinates[splitDimensionIndex]) {
@@ -93,13 +99,8 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		}
 	}
 
-	DistanceFunction getDefaultDistanceFunction() {
-		return DEFAULT_DISTANCE_FUNCTION;
-	}
-
 	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
-		this.targetCoordinates = new double[targetCoordinates.length];
-		System.arraycopy(targetCoordinates, 0, this.targetCoordinates, 0, targetCoordinates.length);
+		this.targetCoordinates = targetCoordinates;
 		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k), this.targetCoordinates).toList();
 	}
 

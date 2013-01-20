@@ -1,6 +1,7 @@
 package lessonz.collections.kdtree.bucketpr;
 
 import java.util.AbstractCollection;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -77,7 +78,8 @@ public class BucketPRKDTree<E extends KDPoint> extends AbstractCollection<E> {
 	 * @return the nearest neighbors found.
 	 */
 	public List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
-		return getKNearestNeighbors(k, targetCoordinates, searcher.getDefaultDistanceFunction());
+		return getKNearestNeighbors(k, targetCoordinates,
+				BucketPRKDKNearestNeighborSearcher.getDefaultDistanceFunction());
 	}
 
 	/**
@@ -96,7 +98,7 @@ public class BucketPRKDTree<E extends KDPoint> extends AbstractCollection<E> {
 	public List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates,
 			final DistanceFunction distanceFunction) {
 		searcher.setDistanceFunction(distanceFunction);
-		return searcher.getKNearestNeighbors(k, targetCoordinates);
+		return searcher.getKNearestNeighbors(k, Arrays.copyOf(targetCoordinates, targetCoordinates.length));
 	}
 
 	/**
