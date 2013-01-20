@@ -10,7 +10,7 @@ class BucketNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 
 	private final int bucketSize;
 	private int capacity;
-	private final ArrayList<E> elements;
+	private final List<E> elements;
 	private final int numberOfDimensions;
 
 	BucketNode(final int numberOfDimensions, final int bucketSize) {
@@ -28,7 +28,6 @@ class BucketNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 					new SplittingPlaneNode<E>(elements, numberOfDimensions, bucketSize);
 			if (splittingPlaneNode.isUnbalanced()) {
 				capacity = capacity * 2;
-				elements.ensureCapacity(capacity);
 				node = this;
 			} else {
 				node = splittingPlaneNode;
