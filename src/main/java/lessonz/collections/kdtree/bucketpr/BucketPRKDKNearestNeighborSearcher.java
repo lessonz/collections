@@ -2,7 +2,9 @@ package lessonz.collections.kdtree.bucketpr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import lessonz.collections.kdtree.KDPoint;
 import lessonz.collections.kdtree.distance.DistanceFunction;
@@ -16,9 +18,9 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		return DEFAULT_DISTANCE_FUNCTION;
 	}
 
+	private int capacity = 0;
 	private DistanceFunction distanceFunction = DEFAULT_DISTANCE_FUNCTION;
 	private double[] targetCoordinates = new double[0];
-
 	private final BucketPRKDTree<E> tree;
 
 	BucketPRKDKNearestNeighborSearcher(final BucketPRKDTree<E> tree) {
@@ -37,125 +39,109 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		return isCloser;
 	}
 
-	private NearestNeighborList getKNearestNeighbors(final BucketPRKDTreeNode<E> node, final int k,
-			final NearestNeighborList nearestNeighborList, final double[] closestStillPossibleCoordinates) {
+	private E getFarthestNearNeighbor(final PriorityQueue<E> nearestNeighborList) {
+		E farthestNearNeighbor = null;
+
+		if (nearestNeighborList.size() >= capacity) {
+			farthestNearNeighbor = nearestNeighborList.peek();
+		}
+
+		return farthestNearNeighbor;
+	}
+
+	private PriorityQueue<E> getKNearestNeighbors(final BucketPRKDTreeNode<E> node,
+			final PriorityQueue<E> nearestNeighborList, final double[] closestStillPossibleCoordinates) {
 		if (node instanceof BucketNode) {
 			return getNearestNeighborsFromBucketNode((BucketNode<E>) node, nearestNeighborList);
 		} else if (node instanceof SplittingPlaneNode) {
-			return getNearestNeighborsFromSplittingPlaneNode((SplittingPlaneNode<E>) node, k, nearestNeighborList,
+			return getNearestNeighborsFromSplittingPlaneNode((SplittingPlaneNode<E>) node, nearestNeighborList,
 					closestStillPossibleCoordinates);
 		}
 
 		throw new IllegalArgumentException("The provided BucketPRKDTreeNode is of an unsupported type.");
 	}
 
-	private NearestNeighborList getNearestNeighborFromSplittingPlanesTreesNodes(final int k,
-			final NearestNeighborList previouslyFoundNearestNeighborList,
-			final double[] closestStillPossibleCoordinates, final double[] fartherClosestStillPossibleCoordinates,
-			final E farthestNearNeighbor, final BucketPRKDTreeNode<E> closerNode,
-			final BucketPRKDTreeNode<E> fartherNode) {
-		NearestNeighborList nearestNeighborList = previouslyFoundNearestNeighborList;
-
-		if (currentElementIsCloser(fartherClosestStillPossibleCoordinates, farthestNearNeighbor)) {
-			nearestNeighborList =
-					getKNearestNeighbors(fartherNode, k, previouslyFoundNearestNeighborList,
-							fartherClosestStillPossibleCoordinates);
-		}
-
-		return getKNearestNeighbors(closerNode, k, nearestNeighborList, closestStillPossibleCoordinates);
-	}
-
-	private NearestNeighborList getNearestNeighborsFromBucketNode(final BucketNode<E> bucketNode,
-			final NearestNeighborList nearestNeighborList) {
+	private PriorityQueue<E> getNearestNeighborsFromBucketNode(final BucketNode<E> bucketNode,
+			final PriorityQueue<E> nearestNeighborList) {
 		for (final E e : bucketNode.getElements()) {
-			if (currentElementIsCloser(e.getCoordinates(), nearestNeighborList.getFarthestNearNeighbor())) {
+			if (currentElementIsCloser(e.getCoordinates(), getFarthestNearNeighbor(nearestNeighborList))) {
 				nearestNeighborList.add(e);
+
+				if (nearestNeighborList.size() > capacity) {
+					nearestNeighborList.poll();
+				}
 			}
 		}
 
 		return nearestNeighborList;
 	}
 
-	private NearestNeighborList getNearestNeighborsFromSplittingPlaneNode(
-			final SplittingPlaneNode<E> splittingPlaneNode, final int k,
-			final NearestNeighborList previouslyFoundNearestNeighborList, final double[] closestStillPossibleCoordinates) {
+	private PriorityQueue<E> getNearestNeighborsFromSplittingPlaneNode(final SplittingPlaneNode<E> splittingPlaneNode,
+			final PriorityQueue<E> previouslyFoundNearestNeighborList, final double[] closestStillPossibleCoordinates) {
 		final int splitDimensionIndex = splittingPlaneNode.getSplitDimensionIndex();
 		final double splitDimensionMedian = splittingPlaneNode.getSplitDimensionMedian();
 
 		final double[] fartherClosestStillPossibleCoordinates =
 				Arrays.copyOf(closestStillPossibleCoordinates, closestStillPossibleCoordinates.length);
 		fartherClosestStillPossibleCoordinates[splitDimensionIndex] = splitDimensionMedian;
-		final E farthestNearNeighbor = previouslyFoundNearestNeighborList.getFarthestNearNeighbor();
+		final E farthestNearNeighbor = getFarthestNearNeighbor(previouslyFoundNearestNeighborList);
 		if (splitDimensionMedian < closestStillPossibleCoordinates[splitDimensionIndex]) {
-			return getNearestNeighborFromSplittingPlanesTreesNodes(k, previouslyFoundNearestNeighborList,
+			return getNearestNeighborsFromSplittingPlanesTreesNodes(previouslyFoundNearestNeighborList,
 					closestStillPossibleCoordinates, fartherClosestStillPossibleCoordinates, farthestNearNeighbor,
 					splittingPlaneNode.getRightBucketPRKDTree().getNode(), splittingPlaneNode.getLeftBucketPRKDTree()
 							.getNode());
 		} else {
-			return getNearestNeighborFromSplittingPlanesTreesNodes(k, previouslyFoundNearestNeighborList,
+			return getNearestNeighborsFromSplittingPlanesTreesNodes(previouslyFoundNearestNeighborList,
 					closestStillPossibleCoordinates, fartherClosestStillPossibleCoordinates, farthestNearNeighbor,
 					splittingPlaneNode.getLeftBucketPRKDTree().getNode(), splittingPlaneNode.getRightBucketPRKDTree()
 							.getNode());
 		}
 	}
 
+	private PriorityQueue<E> getNearestNeighborsFromSplittingPlanesTreesNodes(
+			final PriorityQueue<E> previouslyFoundNearestNeighborList, final double[] closestStillPossibleCoordinates,
+			final double[] fartherClosestStillPossibleCoordinates, final E farthestNearNeighbor,
+			final BucketPRKDTreeNode<E> closerNode, final BucketPRKDTreeNode<E> fartherNode) {
+		PriorityQueue<E> nearestNeighborList = previouslyFoundNearestNeighborList;
+
+		// TODO Should do closer one first and then get the farthestNearNeighbor for comparison.
+		if (currentElementIsCloser(fartherClosestStillPossibleCoordinates, farthestNearNeighbor)) {
+			nearestNeighborList =
+					getKNearestNeighbors(fartherNode, previouslyFoundNearestNeighborList,
+							fartherClosestStillPossibleCoordinates);
+		}
+
+		return getKNearestNeighbors(closerNode, nearestNeighborList, closestStillPossibleCoordinates);
+	}
+
 	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
+		capacity = k;
 		this.targetCoordinates = targetCoordinates;
-		return getKNearestNeighbors(tree.getNode(), k, new NearestNeighborList(k), this.targetCoordinates).toList();
+		return new ArrayList<E>(getKNearestNeighbors(tree.getNode(), new PriorityQueue<>(k, new DistanceComparator()),
+				this.targetCoordinates));
 	}
 
 	void setDistanceFunction(final DistanceFunction distanceFunction) {
 		this.distanceFunction = distanceFunction;
 	}
 
-	private final class NearestNeighborList {
+	private class DistanceComparator implements Comparator<E> {
 
-		private final int capacity;
-		private E farthestNearNeighbor;
-		private final int lastIndex;
-		private final List<E> nearestNeighbors;
+		@Override
+		public int compare(final E o1, final E o2) {
+			final double distanceO1 = distanceFunction.distance(targetCoordinates, o1.getCoordinates());
+			final double distanceO2 = distanceFunction.distance(targetCoordinates, o2.getCoordinates());
 
-		private NearestNeighborList(final int capacity) {
-			this.capacity = capacity;
-			nearestNeighbors = new ArrayList<>(capacity);
-			this.lastIndex = capacity - 1;
-
-		}
-
-		private void add(final E e) {
-			if (nearestNeighbors.size() >= capacity) {
-				nearestNeighbors.remove(lastIndex);
+			final double difference = distanceO2 - distanceO1;
+			if (difference < 0.0) {
+				return -1;
+			} else if (difference > 0.0) {
+				return 1;
+			} else {
+				return 0;
 			}
-
-			boolean addedElement = false;
-			E nearestNeighbor;
-			for (int i = 0; i < nearestNeighbors.size(); i++) {
-				nearestNeighbor = nearestNeighbors.get(i);
-				if (nearestNeighbor == null
-						|| distanceFunction.distance(e.getCoordinates(), targetCoordinates) < distanceFunction
-								.distance(nearestNeighbor.getCoordinates(), targetCoordinates)) {
-					nearestNeighbors.add(i, e);
-					addedElement = true;
-					break;
-				}
-			}
-
-			if (!addedElement) {
-				nearestNeighbors.add(e);
-			}
-
-			if (nearestNeighbors.size() == capacity) {
-				farthestNearNeighbor = nearestNeighbors.get(lastIndex);
-			}
-		}
-
-		private E getFarthestNearNeighbor() {
-			return farthestNearNeighbor;
-		}
-
-		private List<E> toList() {
-			return nearestNeighbors;
 		}
 
 	}
+
 }

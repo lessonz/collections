@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import lessonz.collections.kdtree.KDPoint;
+import lessonz.collections.kdtree.distance.DistanceFunction;
+import lessonz.collections.kdtree.distance.SquaredEuclideanDistanceFunction;
 
 import org.junit.After;
 import org.junit.Before;
@@ -85,6 +87,49 @@ public class BucketPRKDKNearestNeighborSearcherTest {
 		}
 
 		assertTrue(points.isEmpty());
+	}
+
+	@Test
+	public void testGetNearestNeighborReturnsCorrectNeighbor() {
+		tree.add(TEST_ELEMENT_4);
+
+		List<KDPoint> nearestNeighbors = sut.getKNearestNeighbors(1, TEST_ELEMENT_1.getCoordinates());
+		assertEquals(1, nearestNeighbors.size());
+		assertEquals(TEST_ELEMENT_1, nearestNeighbors.get(0));
+
+		nearestNeighbors = sut.getKNearestNeighbors(1, TEST_ELEMENT_2.getCoordinates());
+		assertEquals(1, nearestNeighbors.size());
+		assertEquals(TEST_ELEMENT_2, nearestNeighbors.get(0));
+
+		nearestNeighbors = sut.getKNearestNeighbors(1, TEST_ELEMENT_3.getCoordinates());
+		assertEquals(1, nearestNeighbors.size());
+		assertEquals(TEST_ELEMENT_3, nearestNeighbors.get(0));
+
+		nearestNeighbors = sut.getKNearestNeighbors(1, TEST_ELEMENT_4.getCoordinates());
+		assertEquals(1, nearestNeighbors.size());
+		assertEquals(TEST_ELEMENT_4, nearestNeighbors.get(0));
+
+		nearestNeighbors = sut.getKNearestNeighbors(3, TEST_ELEMENT_3.getCoordinates());
+		assertEquals(3, nearestNeighbors.size());
+		assertEquals(TEST_ELEMENT_1, nearestNeighbors.get(0));
+		assertEquals(TEST_ELEMENT_2, nearestNeighbors.get(1));
+		assertEquals(TEST_ELEMENT_3, nearestNeighbors.get(2));
+	}
+
+	@Test
+	public void testGetNearestNeighborsAreReturnedInOrder() {
+		tree.add(TEST_ELEMENT_4);
+		final List<KDPoint> nearestNeighbors = sut.getKNearestNeighbors(4, TEST_ELEMENT_4.getCoordinates());
+		assertEquals(4, nearestNeighbors.size());
+
+		final DistanceFunction distanceFunction = new SquaredEuclideanDistanceFunction();
+		double previousDistance = Double.MAX_VALUE;
+		double distance = 0.0;
+		for (final KDPoint neighbor : nearestNeighbors) {
+			distance = distanceFunction.distance(TEST_ELEMENT_4.getCoordinates(), neighbor.getCoordinates());
+			assertTrue(previousDistance > distance);
+			previousDistance = distance;
+		}
 	}
 
 }
