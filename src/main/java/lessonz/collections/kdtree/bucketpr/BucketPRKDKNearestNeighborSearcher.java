@@ -99,21 +99,20 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 			final PriorityQueue<E> previouslyFoundNearestNeighborList, final double[] closestStillPossibleCoordinates,
 			final double[] fartherClosestStillPossibleCoordinates, final BucketPRKDTreeNode<E> closerNode,
 			final BucketPRKDTreeNode<E> fartherNode) {
-		PriorityQueue<E> nearestNeighborList = previouslyFoundNearestNeighborList;
+		PriorityQueue<E> nearestNeighborList =
+				getKNearestNeighbors(closerNode, previouslyFoundNearestNeighborList, closestStillPossibleCoordinates);
 
-		// TODO Should do closer one first and then get the farthestNearNeighbor for comparison.
 		if (currentElementIsCloserThanFarthestNearNeighbor(fartherClosestStillPossibleCoordinates)) {
 			nearestNeighborList =
-					getKNearestNeighbors(fartherNode, previouslyFoundNearestNeighborList,
-							fartherClosestStillPossibleCoordinates);
+					getKNearestNeighbors(fartherNode, nearestNeighborList, fartherClosestStillPossibleCoordinates);
 		}
 
-		return getKNearestNeighbors(closerNode, nearestNeighborList, closestStillPossibleCoordinates);
+		return nearestNeighborList;
 	}
 
 	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
 		capacity = k;
-		this.targetCoordinates = targetCoordinates;
+		this.targetCoordinates = Arrays.copyOf(targetCoordinates, targetCoordinates.length);
 		farthestNearNeighborDistance = Double.POSITIVE_INFINITY;
 
 		return new ArrayList<E>(getKNearestNeighbors(tree.getNode(), new PriorityQueue<>(k, new DistanceComparator()),
