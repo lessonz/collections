@@ -34,7 +34,7 @@ public class BucketPRKDKNearestNeighborSearcherTest {
 	}
 
 	private BucketPRKDKNearestNeighborSearcher<KDPoint> sut;
-	private final BucketPRKDTree<KDPoint> tree = new BucketPRKDTree<>(TEST_NUMBER_OF_DIMENSIONS, TEST_BUCKET_SIZE);
+	private BucketPRKDTree<KDPoint> tree = new BucketPRKDTree<>(TEST_NUMBER_OF_DIMENSIONS, TEST_BUCKET_SIZE);
 
 	@After
 	public void cleanup() {
@@ -65,6 +65,12 @@ public class BucketPRKDKNearestNeighborSearcherTest {
 
 	@Test
 	public void testGet3NearestNeighborFromTreeWith3ElementsAllInABucketNode() {
+		tree = new BucketPRKDTree<>(TEST_NUMBER_OF_DIMENSIONS, TEST_ELEMENTS.size());
+		for (final KDPoint point : TEST_ELEMENTS) {
+			tree.add(point);
+		}
+		sut = new BucketPRKDKNearestNeighborSearcher<>(tree);
+
 		final Set<KDPoint> points = new HashSet<KDPoint>(TEST_ELEMENTS);
 		final List<KDPoint> nearestNeighbors = sut.getKNearestNeighbors(3, TEST_ELEMENT_4.getCoordinates());
 		assertEquals(3, nearestNeighbors.size());
