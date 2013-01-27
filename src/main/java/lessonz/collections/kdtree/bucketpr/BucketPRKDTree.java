@@ -17,7 +17,7 @@ import lessonz.collections.kdtree.distance.DistanceFunction;
  *            In order for the {@link BucketPRKDTree} to properly place items within its k-dimensional space elements
  *            must be or extend {@link KDPoint}.
  */
-public class BucketPRKDTree<E extends KDPoint> extends AbstractCollection<E> {
+public class BucketPRKDTree<E extends KDPoint<?>> extends AbstractCollection<E> {
 
 	/**
 	 * This bucket size was pretty much chosen at random.
@@ -39,7 +39,7 @@ public class BucketPRKDTree<E extends KDPoint> extends AbstractCollection<E> {
 	}
 
 	/**
-	 * Constructs a {@link BucketPRKDTree} with the specfied number of dimensions and bucket size.
+	 * Constructs a {@link BucketPRKDTree} with the specified number of dimensions and bucket size.
 	 * 
 	 * @param numberOfDimensions
 	 *            the number of dimensions of this {@link BucketPRKDTree}.
