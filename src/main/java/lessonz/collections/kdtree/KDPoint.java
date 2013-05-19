@@ -1,5 +1,7 @@
 package lessonz.collections.kdtree;
 
+import java.util.Arrays;
+
 /**
  * The {@link KDPoint} class is little more than a container for an {@link Object}. It provides the coordinate data for
  * storing of an {@link Object} in k-dimensional space.
@@ -11,7 +13,6 @@ public class KDPoint<T> {
 
 	private final double[] coordinates;
 	private final T data;
-	private final int numberOfCoordinates;
 
 	/**
 	 * Creates a {@link KDPoint} that stores the specified {@link Object} with the specified coordinates.
@@ -22,9 +23,7 @@ public class KDPoint<T> {
 	 *            the {@link Object} to be stored.
 	 */
 	public KDPoint(final double[] coordinates, final T data) {
-		numberOfCoordinates = coordinates.length;
-		this.coordinates = new double[numberOfCoordinates];
-		System.arraycopy(coordinates, 0, this.coordinates, 0, numberOfCoordinates);
+		this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
 		this.data = data;
 	}
 
@@ -45,9 +44,7 @@ public class KDPoint<T> {
 	 * @return the {@link KDPoint}'s location.
 	 */
 	public double[] getCoordinates() {
-		final double[] newArray = new double[numberOfCoordinates];
-		System.arraycopy(coordinates, 0, newArray, 0, numberOfCoordinates);
-		return newArray;
+		return Arrays.copyOf(coordinates, coordinates.length);
 	}
 
 	/**
