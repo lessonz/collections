@@ -12,7 +12,7 @@ class SplittingPlaneNode<E extends KDPoint> implements BucketPRKDTreeNode<E> {
 	private int splitDimensionIdex;
 	private double splitDimensionMedian;
 
-	public SplittingPlaneNode(final List<E> elements, final int numberOfDimensions, final int bucketSize) {
+	SplittingPlaneNode(final List<E> elements, final int numberOfDimensions, final int bucketSize) {
 		left = new BucketPRKDTree<>(numberOfDimensions, bucketSize);
 		right = new BucketPRKDTree<>(numberOfDimensions, bucketSize);
 
