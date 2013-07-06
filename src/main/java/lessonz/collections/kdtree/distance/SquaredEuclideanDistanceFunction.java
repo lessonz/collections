@@ -1,7 +1,7 @@
 package lessonz.collections.kdtree.distance;
 
 /**
- * The {@link SquaredEuclideanDistanceFunction} calculates distance by use of the Pythagorean formula, but neglects to
+ * The {@link SquaredEuclideanDistanceFunction} calculates distance by use of the Pythagorean formula but neglects to
  * take the final square root of the sum of the squares. This value is sometimes referred to as the quadrance. Because
  * {@link DistanceFunction}s are often used solely to determine <i>relative</i> proximity, the square of distances is
  * equally useful and is much more performant to calculate. While one such calculation may not be an issue, many such
