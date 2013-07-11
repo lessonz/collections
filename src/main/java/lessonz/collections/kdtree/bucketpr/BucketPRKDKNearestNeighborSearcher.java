@@ -30,6 +30,21 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		this.tree = tree;
 	}
 
+	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
+		capacity = k;
+		this.targetCoordinates = Arrays.copyOf(targetCoordinates, targetCoordinates.length);
+		farthestNearNeighborDistance = Double.POSITIVE_INFINITY;
+
+		nearestNeighborList = new PriorityQueue<>(capacity, new FarthestComparator());
+		findNearestNeighbors();
+
+		return new ArrayList<E>(nearestNeighborList);
+	}
+
+	void setDistanceFunction(final DistanceFunction distanceFunction) {
+		this.distanceFunction = distanceFunction;
+	}
+
 	private void addNearestNeighbor(final Queue<E> nearestNeighborList, final E e) {
 		if (nearestNeighborList.size() >= capacity) {
 			nearestNeighborList.poll();
@@ -76,7 +91,7 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		double splitDimensionMedian;
 		SplittingPlaneNode<E> splittingPlaneNode;
 		KDPoint<BucketPRKDTreeNode<E>> closestKDPoint;
-		while (closerNode != null && testCoordinatesAreCloserThanFarthestNearNeighbor(closestStillPossibleCoordinates)) {
+		while (testCoordinatesAreCloserThanFarthestNearNeighbor(closestStillPossibleCoordinates)) {
 			while (closerNode instanceof SplittingPlaneNode) {
 				splittingPlaneNode = (SplittingPlaneNode<E>) closerNode;
 				splitDimensionIndex = splittingPlaneNode.getSplitDimensionIndex();
@@ -93,7 +108,10 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 				fartherClosestStillPossibleCoordinates =
 						Arrays.copyOf(closestStillPossibleCoordinates, closestStillPossibleCoordinates.length);
 				fartherClosestStillPossibleCoordinates[splitDimensionIndex] = splitDimensionMedian;
-				/* This is only safe because the KDPoint constructor creates a copy of the coordinate array. */
+				/*
+				 * Direct use of the fartherClosestStillPossibleCoordinates array is only safe because the KDPoint
+				 * constructor creates a copy of the coordinate array.
+				 */
 				fartherNodes
 						.add(new KDPoint<BucketPRKDTreeNode<E>>(fartherClosestStillPossibleCoordinates, fartherNode));
 			}
@@ -107,7 +125,7 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 				closerNode = closestKDPoint.getData();
 				closestStillPossibleCoordinates = closestKDPoint.getCoordinates();
 			} else {
-				closerNode = null;
+				return;
 			}
 		}
 	}
@@ -121,21 +139,6 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 		}
 
 		return isCloser;
-	}
-
-	List<E> getKNearestNeighbors(final int k, final double[] targetCoordinates) {
-		capacity = k;
-		this.targetCoordinates = Arrays.copyOf(targetCoordinates, targetCoordinates.length);
-		farthestNearNeighborDistance = Double.POSITIVE_INFINITY;
-
-		nearestNeighborList = new PriorityQueue<>(capacity, new FarthestComparator());
-		findNearestNeighbors();
-
-		return new ArrayList<E>(nearestNeighborList);
-	}
-
-	void setDistanceFunction(final DistanceFunction distanceFunction) {
-		this.distanceFunction = distanceFunction;
 	}
 
 	/**
