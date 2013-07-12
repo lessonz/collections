@@ -22,9 +22,9 @@ class BucketPRKDKNearestNeighborSearcher<E extends KDPoint> {
 	private int capacity = 0;
 	private DistanceFunction distanceFunction = DEFAULT_DISTANCE_FUNCTION;
 	private double farthestNearNeighborDistance = Double.POSITIVE_INFINITY;
+	private Queue<E> nearestNeighborList;
 	private double[] targetCoordinates = new double[0];
 	private final BucketPRKDTree<E> tree;
-	Queue<E> nearestNeighborList = new PriorityQueue<>(1, new FarthestComparator());
 
 	BucketPRKDKNearestNeighborSearcher(final BucketPRKDTree<E> tree) {
 		this.tree = tree;
